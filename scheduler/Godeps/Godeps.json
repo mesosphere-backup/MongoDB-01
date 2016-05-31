@@ -1,0 +1,22 @@
+{
+	"ImportPath": "github.com/tangmingdong123/mongodb-mesos/scheduler",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v71",
+	"Deps": [
+		{
+			"ImportPath": "github.com/emicklei/go-restful",
+			"Comment": "v1.2-55-gceb1e01",
+			"Rev": "ceb1e013549944e3cc37f24753f9d86366505ee1"
+		},
+		{
+			"ImportPath": "github.com/emicklei/go-restful/log",
+			"Comment": "v1.2-55-gceb1e01",
+			"Rev": "ceb1e013549944e3cc37f24753f9d86366505ee1"
+		},
+		{
+			"ImportPath": "github.com/emicklei/go-restful/swagger",
+			"Comment": "v1.2-55-gceb1e01",
+			"Rev": "ceb1e013549944e3cc37f24753f9d86366505ee1"
+		}
+	]
+}
