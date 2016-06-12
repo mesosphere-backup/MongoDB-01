@@ -55,27 +55,27 @@ func handleReplicaSet(driver sched.SchedulerDriver,
 			}
 			//if init fail before, then retry
 			if rs.State == repo.STATE_RUNNING && (rs.InitState == repo.INIT_STATE_INIT || rs.InitState == repo.INIT_STATE_FAIL) {
-				db := &repo.DBNode{Cpu:PREFIX_TASK_REPLICA_INIT_CPU,Memory:PREFIX_TASK_REPLICA_INIT_MEM}
-				
+				db := &repo.DBNode{Cpu: PREFIX_TASK_REPLICA_INIT_CPU, Memory: PREFIX_TASK_REPLICA_INIT_MEM}
+
 				offer := isMatchStandalone(db, offers, usedMap)
-					if offer != nil {
-						usedIDs = append(usedIDs, offer.GetId())
+				if offer != nil {
+					usedIDs = append(usedIDs, offer.GetId())
 
-						u := usedMap[offer]
-						if u == nil {
-							u = &Used{Cpu: 0, Mem: 0, Ports: []uint64{}}
-							usedMap[offer] = u
-						}
-						u.Cpu = u.Cpu + db.Cpu
-						u.Mem = u.Mem + db.Memory
-
-						log.Infof("toLaunchReplicaInitTask,%v", *rs)
-						rs.InitState = repo.INIT_STATE_DEPLOYING
-
-						driver.LaunchTasks([]*mesos.OfferID{offer.GetId()},
-							[]*mesos.TaskInfo{genReplicaInitTask(rs, offer)},
-							&mesos.Filters{RefuseSeconds: proto.Float64(5)})
+					u := usedMap[offer]
+					if u == nil {
+						u = &Used{Cpu: 0, Mem: 0, Ports: []uint64{}}
+						usedMap[offer] = u
 					}
+					u.Cpu = u.Cpu + db.Cpu
+					u.Mem = u.Mem + db.Memory
+
+					log.Infof("toLaunchReplicaInitTask,%v", *rs)
+					rs.InitState = repo.INIT_STATE_DEPLOYING
+
+					driver.LaunchTasks([]*mesos.OfferID{offer.GetId()},
+						[]*mesos.TaskInfo{genReplicaInitTask(rs, offer)},
+						&mesos.Filters{RefuseSeconds: proto.Float64(5)})
+				}
 			}
 		} else if rs.Cancel { //to be cancel
 			for _, db := range rs.Nodes {
@@ -148,25 +148,25 @@ func genReplicaInitTask(rs *repo.ReplicaSet, offer *mesos.Offer) *mesos.TaskInfo
 		Value: proto.String(replicaInitTaskID(rs)),
 	}
 	taskType := mesos.ContainerInfo_DOCKER
-	
-	var db0 *repo.DBNode  //node to be connect
-	
-	initial := "rs.initiate({_id:\""+rs.Name+"\",members:["
-	for i,db := range rs.Nodes {
+
+	var db0 *repo.DBNode //node to be connect
+
+	initial := "rs.initiate({_id:\"" + rs.Name + "\",members:["
+	for i, db := range rs.Nodes {
 		if db0 == nil {
 			db0 = db
 		}
-		
-		initial = initial + "{_id:"+strconv.Itoa(i)+",host:\""+db.Hostname+":"+strconv.Itoa(int(db.Port))+"\"}"
+
+		initial = initial + "{_id:" + strconv.Itoa(i) + ",host:\"" + db.Hostname + ":" + strconv.Itoa(int(db.Port)) + "\"}"
 		if i != len(rs.Nodes)-1 {
 			initial = initial + ","
 		}
 	}
 	initial = initial + "]})"
 	//initial = "'"+initial+"'"
-	
-	log.Infof("initial command %s",initial)
-	node := db0.Hostname+":"+strconv.Itoa(int(db0.Port))
+
+	log.Infof("initial command %s", initial)
+	node := db0.Hostname + ":" + strconv.Itoa(int(db0.Port))
 
 	task := &mesos.TaskInfo{
 		Name:    proto.String(replicaInitTaskID(rs)),
@@ -180,7 +180,7 @@ func genReplicaInitTask(rs *repo.ReplicaSet, offer *mesos.Offer) *mesos.TaskInfo
 		},
 		Command: &mesos.CommandInfo{
 			Shell:     proto.Bool(false),
-			Arguments: []string{"/usr/bin/mongo",node,"--eval="+ initial},
+			Arguments: []string{"/usr/bin/mongo", node, "--eval=" + initial},
 		},
 		Resources: []*mesos.Resource{
 			util.NewScalarResource("cpus", float64(PREFIX_TASK_REPLICA_INIT_CPU)),
@@ -304,15 +304,15 @@ func checkReplicaState(rs *repo.ReplicaSet) {
 }
 
 func initReplicaSet(rs *repo.ReplicaSet) {
-	
-		var db0 *repo.DBNode
-		var ipports []string
-		for _, db := range rs.Nodes {
-			if db0 == nil {
-				db0 = db
-			}
 
-			ipports = append(ipports, db.Hostname+""+strconv.Itoa(int(db.Port)))
+	var db0 *repo.DBNode
+	var ipports []string
+	for _, db := range rs.Nodes {
+		if db0 == nil {
+			db0 = db
 		}
+
+		ipports = append(ipports, db.Hostname+""+strconv.Itoa(int(db.Port)))
+	}
 
 }

@@ -15,31 +15,33 @@ import (
 	"github.com/tangmingdong123/mongodb-mesos/scheduler/rest"
 	"github.com/tangmingdong123/mongodb-mesos/scheduler/repo"
 	mongodbschd "github.com/tangmingdong123/mongodb-mesos/scheduler/mesos"
+	config "github.com/tangmingdong123/mongodb-mesos/scheduler/config"
 )
 
 /**
-mongodb-mesos -mesos=172.17.2.91:5050 -zk 192.168.3.223:2181 -name mongodb-mesos 
+mongodb-mesos -mesos=172.17.2.91:5050 -zk 192.168.3.223:2181 -name mongodb-mesos -port 37017 -failoverTimeoutSeconds 300
 */
 func main() {
 	//parse args
-	mesos := flag.String("mesos","172.17.2.91:5050","zk of mesos")
-	zk := flag.String("zk","192.168.3.223:2181","repo of mongodb-scheduler")
-	name := flag.String("name","mongodb-mesos","framework's name")	
-	port := flag.Int("port",37017,"framework's http port")
+	config.MesosMasterIpAndPort = flag.String("mesos","172.17.2.91:5050","mesos master ip and port")
+	config.ZK = flag.String("zk","192.168.3.223:2181","repo of mongodb-scheduler")
+	config.SchedulerName = flag.String("name","mongodb-mesos","framework's name")	
+	config.HTTPPort = flag.Int("port",37017,"framework's http port")
+	config.FailoverTimeoutSeconds = flag.Float64("failoverTimeoutSeconds",300,"Failover Timeout in Second")
 	
 	flag.Parse()
 	
 	fmt.Println("mongodb-mesos scheduler start...")
-	fmt.Printf("mongodb-mesos scheduler mesos:%s,zk:%s,name:%s,port:%d\n",*mesos,*zk,*name,*port)
+	fmt.Printf("mongodb-mesos scheduler mesos:%s,zk:%s,name:%s,port:%d\n",*config.MesosMasterIpAndPort,*config.ZK,*config.SchedulerName,*config.HTTPPort)
 	
 	//launch HTTP REST service
-	go launchHTTP(*port)
+	go launchHTTP(*config.HTTPPort)
 	
 	//int zk
-	repo.InitZK([]string{*zk},"/"+*name)
+	repo.InitZK([]string{*config.ZK},"/"+*config.SchedulerName)
 	
 	//launch framework
-	mongodbschd.Start(mesos)
+	mongodbschd.Start()
 	select{}
 }
 
@@ -59,7 +61,7 @@ func launchHTTP(port int){
 			WebServicesUrl:  "",
 			ApiPath:         "/apidocs.json",
 			SwaggerPath:     "/apidocs/",
-			SwaggerFilePath: "d:/swagger-ui/dist",
+			SwaggerFilePath: "swagger-ui/dist",
 		}
 	
 	swagger.RegisterSwaggerService(config,restful.DefaultContainer)

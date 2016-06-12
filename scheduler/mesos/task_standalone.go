@@ -8,6 +8,7 @@ import (
 	sched "github.com/mesos/mesos-go/scheduler"
 	"strings"
 	//"encoding/json"
+	//"github.com/tangmingdong123/mongodb-mesos/scheduler/config"
 	"github.com/tangmingdong123/mongodb-mesos/scheduler/repo"
 	//"strconv"
 )
@@ -78,6 +79,8 @@ func genStandaloneTask(db *repo.DBNode, offer *mesos.Offer, hostPort uint64) *me
 	protocol := "tcp"
 	network := mesos.ContainerInfo_DockerInfo_BRIDGE
 	hostPort32 := uint32(hostPort)
+	//visibility := mesos.DiscoveryInfo_EXTERNAL
+	//domainname := PREFIX_TASK_STANDALONE + db.Name + "." + *config.SchedulerName
 
 	task := &mesos.TaskInfo{
 		Name:    proto.String(PREFIX_TASK_STANDALONE + db.Name),
@@ -108,6 +111,10 @@ func genStandaloneTask(db *repo.DBNode, offer *mesos.Offer, hostPort uint64) *me
 					End:   &hostPort,
 				}}),
 		},
+		//Discovery: &mesos.DiscoveryInfo{
+		//	Visibility: &visibility,
+		//	Name:       &domainname,
+		//},
 	}
 	return task
 }
